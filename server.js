@@ -10,7 +10,7 @@ import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const FRONTEND = path.join(__dirname, 'frontend');
+const FRONTEND = __dirname;
 const DB_FILE = path.join(__dirname, 'data.json');
 const PORT = 3000;
 const LOG = path.join(__dirname, 'server_debug.log');
@@ -404,6 +404,68 @@ async function importFileToDB(fileName, fileBuffer, oldFileId) {
     return { success: true, file_id: fileId, file_name: fileName, row_count: totalRows, cat_count: parsed.categories.length };
 }
 
+// ========== JSON 导入（浏览器端预解析） ==========
+async function importCategoriesToDB(fileName, categories, oldFileId) {
+    if (!categories || categories.length === 0) {
+        return { error: '未检测到有效数据。请确保文件包含分类行（如"HP系列"）、表头行（含"型号"等）和数据行。' };
+    }
+
+    const contentStr = JSON.stringify({ fileName, categories });
+    const hash = crypto.createHash('sha256').update(contentStr).digest('hex');
+
+    if (!oldFileId) {
+        const dup = DB.quotation_files.find(f => f.file_hash === hash);
+        if (dup) return { error: `文件"${dup.file_name}"已存在，内容完全相同` };
+    }
+
+    if (oldFileId) {
+        DB.quotation_rows = DB.quotation_rows.filter(r => r.file_id !== oldFileId);
+        const idx = DB.quotation_files.findIndex(f => f.id === oldFileId);
+        if (idx >= 0) DB.quotation_files.splice(idx, 1);
+    }
+
+    const sameNameIdx = DB.quotation_files.findIndex(f => f.file_name === fileName);
+    if (sameNameIdx >= 0) {
+        DB.quotation_rows = DB.quotation_rows.filter(r => r.file_id !== DB.quotation_files[sameNameIdx].id);
+        DB.quotation_files.splice(sameNameIdx, 1);
+    }
+
+    const fileId = oldFileId || nextFileId++;
+    const totalRows = categories.reduce((sum, c) => sum + (c.rows || []).length, 0);
+    const now = new Date().toISOString();
+
+    if (oldFileId) {
+        const f = DB.quotation_files.find(x => x.id === oldFileId);
+        if (f) {
+            f.file_name = fileName; f.file_hash = hash;
+            f.row_count = totalRows; f.cat_count = categories.length;
+            f.updated_at = now;
+        }
+    } else {
+        DB.quotation_files.push({
+            id: fileId, file_name: fileName, file_hash: hash,
+            row_count: totalRows, cat_count: categories.length,
+            created_at: now, updated_at: now,
+        });
+    }
+
+    for (const cat of categories) {
+        for (const row of (cat.rows || [])) {
+            DB.quotation_rows.push({
+                id: nextRowId++, file_id: fileId, file_name: fileName,
+                category: cat.name, category_order: cat.order,
+                model: row.model,
+                header_data: JSON.stringify(cat.headers || []),
+                row_data: JSON.stringify(row.data || []),
+                row_order: row.order, created_at: now,
+            });
+        }
+    }
+
+    saveDB();
+    return { success: true, file_id: fileId, file_name: fileName, row_count: totalRows, cat_count: categories.length };
+}
+
 // ========== 路由 ==========
 async function route(method, pathname, query, body, req) {
     const parts = pathname.replace(/\/+$/, '').split('/').filter(Boolean);
@@ -453,23 +515,30 @@ async function route(method, pathname, query, body, req) {
     if (method === 'POST' && parts[1] === 'admin' && parts[2] === 'upload') {
         if (!body || body.length === 0) return { error: '请求体为空', status: 400 };
 
+        // JSON 方式（浏览器端预解析 Excel）
+        if (ct.includes('application/json')) {
+            const json = safeJsonParse(body.toString('utf-8'), null);
+            if (!json || !json.fileName) return { error: 'JSON格式无效，缺少 fileName', status: 400 };
+            const result = await importCategoriesToDB(json.fileName, json.categories || [], null);
+            if (result.error) return result;
+            return { data: result, status: 201 };
+        }
+
         const boundary = ct.match(/boundary="?([^";\s]+)"?/)?.[1];
         if (!boundary) {
-            // 尝试其他方式：也许不是 multipart
             debug('  WARN: no boundary found, trying raw buffer as xlsx');
-            // 假设整个 body 就是文件（fallback for simple POST）
             const result = await importFileToDB('uploaded.xlsx', body, null);
             if (result.success) return { data: result, status: 201 };
             return { error: '无法识别上传格式，请通过页面拖拽上传', status: 400 };
         }
 
         debug(`  boundary: "${boundary}"`);
-        const parts = parseMultipartBody(body, boundary);
-        if (parts.length === 0) {
+        const fileParts = parseMultipartBody(body, boundary);
+        if (fileParts.length === 0) {
             return { error: '未检测到上传文件，请拖拽 .xlsx 文件到上传区域', status: 400 };
         }
 
-        const { filename, content } = parts[0];
+        const { filename, content } = fileParts[0];
         if (!filename.match(/\.xlsx?$/i)) {
             return { error: `仅支持 .xlsx 文件，当前文件: ${filename}`, status: 400 };
         }
@@ -496,13 +565,22 @@ async function route(method, pathname, query, body, req) {
         if (!DB.quotation_files.find(f => f.id === fid)) return { error: '文件不存在', status: 404 };
         if (!body || body.length === 0) return { error: '请求体为空', status: 400 };
 
+        // JSON 方式（浏览器端预解析 Excel）
+        if (ct.includes('application/json')) {
+            const json = safeJsonParse(body.toString('utf-8'), null);
+            if (!json || !json.fileName) return { error: 'JSON格式无效，缺少 fileName', status: 400 };
+            const result = await importCategoriesToDB(json.fileName, json.categories || [], fid);
+            if (result.error) return result;
+            return { data: result };
+        }
+
         const boundary = ct.match(/boundary="?([^";\s]+)"?/)?.[1];
         if (!boundary) return { error: '无法识别上传格式', status: 400 };
 
-        const parts = parseMultipartBody(body, boundary);
-        if (parts.length === 0) return { error: '未检测到上传文件', status: 400 };
+        const fileParts = parseMultipartBody(body, boundary);
+        if (fileParts.length === 0) return { error: '未检测到上传文件', status: 400 };
 
-        const { filename, content } = parts[0];
+        const { filename, content } = fileParts[0];
         const result = await importFileToDB(filename, content, fid);
         if (result.error) return result;
         return { data: result };

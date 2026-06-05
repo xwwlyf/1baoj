@@ -3,8 +3,7 @@ node_modules/
 dist/
 data.json
 server_debug.log
+server.log
 *.xlsx
 !sample-generator.html
-server.log
-package.json
-package-lock.json
+.netlify/

@@ -1,0 +1,23 @@
+# ============================================
+# 打印机耗材报价检索系统 - Netlify 配置
+# ============================================
+
+[build]
+  command = "echo 'Static site — no build step required'"
+  publish = "."
+
+[functions]
+  node_bundler = "esbuild"
+  directory = "netlify/functions"
+
+# API 代理：将所有 /api/* 请求转发到 Netlify Function
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api"
+  status = 200
+
+# SPA fallback（确保直接访问 HTML 页面正常）
+[[redirects]]
+  from = "/*"
+  to = "/:splat"
+  status = 200

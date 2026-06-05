@@ -1,0 +1,16 @@
+{
+  "name": "printer-quotation-system",
+  "version": "1.0.0",
+  "description": "打印机耗材报价检索系统 — 支持 Excel 上传、型号搜索、报价管理",
+  "type": "module",
+  "scripts": {
+    "dev": "node server.js",
+    "build": "node build-static.js"
+  },
+  "dependencies": {
+    "@netlify/blobs": "^8.0.0",
+    "xlsx": "^0.18.5"
+  },
+  "keywords": ["quotation", "printer", "search", "excel"],
+  "license": "MIT"
+}
