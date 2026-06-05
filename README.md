@@ -13,7 +13,7 @@
 
 ## 🚀 一键部署到 Netlify
 
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/你的用户名/报价系统)
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/xwwlyf/1baoj)
 
 1. 点击上方按钮，或 Fork 本仓库后在 Netlify 中导入
 2. Netlify 自动识别 `netlify.toml` 配置，无需额外设置
