@@ -209,10 +209,16 @@ async function downloadFile(fileId, fileName) {
     } catch (e) { showToast(`导出失败：${e.message}`, 'error'); }
 }
 
-// ========== 拖拽 ==========
+// ========== 点击 & 拖拽 ==========
 function initDragDrop() {
     const zone = document.getElementById('uploadZone');
     if (!zone) return;
+    // 点击打开文件选择
+    zone.addEventListener('click', () => {
+        const input = document.getElementById('fileInput');
+        if (input) input.click();
+    });
+    // 拖拽事件
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(ev => {
         zone.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); });
     });
