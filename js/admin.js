@@ -1,9 +1,9 @@
 // ============================================
 // 打印机耗材报价检索系统 - 管理后台逻辑
-// v3 — FileReader + async await 修复版
+// v4 — 详细错误诊断版
 // ============================================
 
-console.log('[报价系统] admin.js v3 loaded');
+console.log('[报价系统] admin.js v4 loaded');
 
 let currentUpdateFileId = null;
 
@@ -19,7 +19,11 @@ async function loadStats() {
         document.getElementById('statFiles').textContent = stats.file_count;
         document.getElementById('statRows').textContent = stats.row_count.toLocaleString();
         document.getElementById('statSize').textContent = formatBytes(stats.estimated_bytes);
-    } catch (e) { console.error(e); }
+    } catch (e) {
+        console.error('loadStats ERROR:', e);
+        document.getElementById('statFiles').textContent = 'ERR';
+        document.getElementById('statRows').textContent = e.message;
+    }
 }
 
 async function loadFileList() {
@@ -44,7 +48,8 @@ async function loadFileList() {
         html += '</ul>';
         container.innerHTML = html;
     } catch (e) {
-        container.innerHTML = `<div class="empty-state"><div class="empty-text">加载失败: ${escapeHtml(e.message)}</div></div>`;
+        console.error('loadFileList ERROR:', e);
+        container.innerHTML = `<div class="empty-state"><div class="empty-icon" style="font-size:48px">⚠️</div><div class="empty-text" style="color:#d93025">加载失败</div><div class="empty-hint" style="color:#d93025;font-size:14px;word-break:break-all">${escapeHtml(e.message || String(e))}</div><div class="empty-hint" style="margin-top:8px;font-size:11px">请按 F12 打开 Console 查看详细错误</div></div>`;
     }
 }
 
