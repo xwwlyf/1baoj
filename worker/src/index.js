@@ -3,6 +3,7 @@
 // ============================================
 
 import * as XLSX from 'xlsx';
+import { serveStatic } from './static-files.js';
 
 // --- CORS 配置 ---
 const CORS_HEADERS = {
@@ -87,6 +88,10 @@ async function handleRequest(request, env) {
         if (method === 'GET' && path === '/api/admin/stats') {
             return await getStats(env);
         }
+
+        // 静态文件（非 API 路径）
+        const staticResp = serveStatic(path);
+        if (staticResp) return staticResp;
 
         // 404
         return error('未找到路由', 404);
