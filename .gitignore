@@ -5,3 +5,4 @@ data.json
 server_debug.log
 *.xlsx
 !sample-generator.html
+server.log
