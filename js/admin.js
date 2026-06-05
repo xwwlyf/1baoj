@@ -112,7 +112,7 @@ function getModelVal(data, col) {
 }
 
 // ========== 上传 ==========
-function handleFileSelect(e) { const f = e.target.files[0]; if (f) doUpload(f); e.target.value = ''; }
+async function handleFileSelect(e) { const f = e.target.files[0]; if (f) { await doUpload(f); } e.target.value = ''; }
 
 async function doUpload(file) {
     if (!file.name.match(/\.xlsx?$/i)) { showToast('请选择 .xlsx 文件', 'error'); return; }
@@ -149,8 +149,8 @@ async function doDelete(id, name) {
 // ========== 更新 ==========
 function triggerUpdate(id) { currentUpdateFileId = id; document.getElementById('updateFileInput').click(); }
 async function handleUpdateFile(e) {
-    const file = e.target.files[0]; if (!file || !currentUpdateFileId) return; e.target.value = '';
-    if (!confirm(`用 "${file.name}" 替换？`)) { currentUpdateFileId = null; return; }
+    const file = e.target.files[0]; if (!file || !currentUpdateFileId) return; const input = e.target;
+    if (!confirm(`用 "${file.name}" 替换？`)) { currentUpdateFileId = null; input.value = ''; return; }
     try {
         await loadXLSX();
         const arrayBuffer = await file.arrayBuffer();
@@ -160,7 +160,7 @@ async function handleUpdateFile(e) {
         showToast(`更新成功：${data.row_count} 条`, 'success');
         loadStats(); loadFileList();
     } catch (e) { showToast(e.message, 'error'); }
-    finally { currentUpdateFileId = null; }
+    finally { currentUpdateFileId = null; input.value = ''; }
 }
 
 // ========== 导出（浏览器端） ==========
