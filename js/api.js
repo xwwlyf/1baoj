@@ -21,17 +21,27 @@ async function api(method, path, body) {
 
     let res;
     try { res = await fetch(API_BASE + path, opts); }
-    catch (e) { throw new Error('无法连接服务器'); }
+    catch (e) {
+        console.error('Fetch failed:', e);
+        throw new Error('无法连接服务器 (' + e.message + ')');
+    }
 
     const ct = res.headers.get('Content-Type') || '';
     if (ct.includes('application/vnd.openxmlformats')) {
-        if (!res.ok) throw new Error('导出失败');
+        if (!res.ok) {
+            console.error('Export failed:', res.status);
+            throw new Error('导出失败 (' + res.status + ')');
+        }
         return res.blob();
     }
 
     let data;
-    try { data = await res.json(); }
-    catch { throw new Error(`服务器返回异常 (${res.status})`); }
+    const text = await res.text();
+    try { data = JSON.parse(text); }
+    catch {
+        console.error('JSON parse failed. Status:', res.status, 'Body preview:', text.substring(0, 200));
+        throw new Error(`服务器返回异常 (${res.status})`);
+    }
     if (!res.ok) throw new Error(data.error || `请求失败 (${res.status})`);
     return data;
 }

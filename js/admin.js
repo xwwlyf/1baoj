@@ -123,10 +123,16 @@ async function doUpload(file) {
     rp.textContent = '正在解析 Excel...';
     try {
         await loadXLSX();
-        const arrayBuffer = await file.arrayBuffer();
+        // 使用 FileReader 代替 arrayBuffer()，兼容性更好，避免浏览器 GC 文件句柄
+        const arrayBuffer = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = () => reject(new Error('文件读取失败'));
+            reader.readAsArrayBuffer(file);
+        });
         const wb = XLSX.read(new Uint8Array(arrayBuffer), { type: 'array' });
         const categories = parseExcelInBrowser(wb);
-        if (!categories || categories.length === 0) throw new Error('未找到有效数据');
+        if (!categories || categories.length === 0) throw new Error('未找到有效数据，请检查Excel格式');
         const total = categories.reduce((s, c) => s + c.rows.length, 0);
         rp.textContent = `解析完成：${total} 条，正在上传...`;
         const data = await uploadFile(file.name, categories);
@@ -134,6 +140,7 @@ async function doUpload(file) {
         showToast(`上传成功：${data.row_count} 条`, 'success');
         loadStats(); loadFileList();
     } catch (e) {
+        console.error('Upload error:', e);
         rp.innerHTML = `<span style="color:var(--danger)">❌ ${escapeHtml(e.message)}</span>`;
         showToast(e.message, 'error');
     } finally { ul.classList.add('hidden'); }
@@ -153,7 +160,12 @@ async function handleUpdateFile(e) {
     if (!confirm(`用 "${file.name}" 替换？`)) { currentUpdateFileId = null; input.value = ''; return; }
     try {
         await loadXLSX();
-        const arrayBuffer = await file.arrayBuffer();
+        const arrayBuffer = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = () => reject(new Error('文件读取失败'));
+            reader.readAsArrayBuffer(file);
+        });
         const wb = XLSX.read(new Uint8Array(arrayBuffer), { type: 'array' });
         const categories = parseExcelInBrowser(wb);
         const data = await updateFile(currentUpdateFileId, file.name, categories);
