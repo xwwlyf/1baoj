@@ -2,6 +2,8 @@
 // 打印机耗材报价检索系统 - API 工具
 // ============================================
 
+// v3 — 点击上传修复版
+console.log('[报价系统] api.js v3 loaded');
 const API_BASE = (window.API_BASE_URL || '/api').replace(/\/+$/, '');
 
 // file:// 检测

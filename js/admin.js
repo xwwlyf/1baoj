@@ -1,6 +1,9 @@
 // ============================================
 // 打印机耗材报价检索系统 - 管理后台逻辑
+// v3 — FileReader + async await 修复版
 // ============================================
+
+console.log('[报价系统] admin.js v3 loaded');
 
 let currentUpdateFileId = null;
 
@@ -209,16 +212,10 @@ async function downloadFile(fileId, fileName) {
     } catch (e) { showToast(`导出失败：${e.message}`, 'error'); }
 }
 
-// ========== 点击 & 拖拽 ==========
+// ========== 拖拽 ==========
 function initDragDrop() {
     const zone = document.getElementById('uploadZone');
     if (!zone) return;
-    // 点击打开文件选择
-    zone.addEventListener('click', () => {
-        const input = document.getElementById('fileInput');
-        if (input) input.click();
-    });
-    // 拖拽事件
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(ev => {
         zone.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); });
     });

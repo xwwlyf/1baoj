@@ -65,12 +65,10 @@ function err(res, msg, status = 400) {
 }
 
 function readBody(req) {
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
         const chunks = [];
         req.on('data', c => chunks.push(c));
         req.on('end', () => resolve(Buffer.concat(chunks)));
-        req.on('error', e => reject(new Error(`请求读取失败: ${e.message}`)));
-        req.setTimeout(30000, () => reject(new Error('请求超时')));
     });
 }
 
