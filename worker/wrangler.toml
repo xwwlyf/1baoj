@@ -1,0 +1,21 @@
+# ============================================
+# 打印机耗材报价检索系统 - Wrangler 配置
+# ============================================
+name = "quotation-system"
+main = "src/index.js"
+compatibility_date = "2025-06-01"
+compatibility_flags = ["nodejs_compat"]
+
+# D1 数据库绑定
+[[d1_databases]]
+binding = "DB"
+database_name = "quotation_db"
+database_id = "PLACEHOLDER_DB_ID"
+
+# 环境变量
+[vars]
+MAX_FILE_SIZE_MB = 10
+
+# 免费套餐优化
+[observability]
+enabled = false

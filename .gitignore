@@ -1,0 +1,7 @@
+node_modules/
+.wrangler/
+dist/
+data.json
+server_debug.log
+*.xlsx
+!sample-generator.html

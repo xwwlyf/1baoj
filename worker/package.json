@@ -1,0 +1,19 @@
+{
+  "name": "quotation-system-worker",
+  "version": "1.0.0",
+  "description": "打印机耗材报价检索系统 - Cloudflare Worker API",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:create": "wrangler d1 create quotation_db",
+    "db:init": "wrangler d1 execute quotation_db --file=../database/schema.sql"
+  },
+  "dependencies": {
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  }
+}

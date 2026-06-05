@@ -1,0 +1,3 @@
+# Cloudflare Pages 重定向规则
+# 将 /api/* 请求代理到 Worker
+/api/*  https://quotation-system.YOUR_SUBDOMAIN.workers.dev/api/:splat  200

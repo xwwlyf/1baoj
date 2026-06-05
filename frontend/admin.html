@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理后台 - 打印机耗材报价检索系统</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="app-header">
+        <div class="logo">
+            <span class="icon">🖨️</span>
+            <span>打印机耗材报价检索系统</span>
+        </div>
+        <nav>
+            <a href="index.html">🔍 报价查询</a>
+            <a href="admin.html" class="active">⚙️ 管理后台</a>
+        </nav>
+    </header>
+
+    <main class="container">
+
+        <!-- Stats -->
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="stat-value" id="statFiles">--</div>
+                <div class="stat-label">📁 报价文件数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statRows">--</div>
+                <div class="stat-label">📊 总记录行数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statSize">--</div>
+                <div class="stat-label">💾 预估存储</div>
+            </div>
+        </div>
+
+        <!-- Upload -->
+        <div class="card">
+            <h3 class="card-title">📤 上传 Excel 报价文件</h3>
+            <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+                <div class="upload-icon">📁</div>
+                <div class="upload-text">点击选择 Excel 文件或拖拽到此处</div>
+                <div class="upload-hint">支持 .xlsx 格式，最大 10MB</div>
+            </div>
+            <input type="file" id="fileInput" accept=".xlsx,.xls" onchange="handleFileSelect(event)" style="display:none">
+            <div id="uploadProgress" class="hidden mt-16">
+                <div class="loading" id="uploadLoading"></div>
+                <p id="uploadResult" class="text-center"></p>
+            </div>
+        </div>
+
+        <!-- File List -->
+        <div class="card">
+            <h3 class="card-title">📋 文件管理</h3>
+            <div id="fileListContainer">
+                <div class="loading" id="fileListLoading"></div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Hidden update file input -->
+    <input type="file" id="updateFileInput" accept=".xlsx,.xls" style="display:none" onchange="handleUpdateFile(event)">
+
+    <script src="js/api.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>

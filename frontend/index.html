@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>打印机耗材报价检索系统</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <header class="app-header">
+        <div class="logo">
+            <span class="icon">🖨️</span>
+            <span>打印机耗材报价检索系统</span>
+        </div>
+        <nav>
+            <a href="index.html" class="active">🔍 报价查询</a>
+            <a href="admin.html">⚙️ 管理后台</a>
+        </nav>
+    </header>
+
+    <main class="container">
+
+        <!-- 搜索区 -->
+        <section class="search-section">
+            <h1 class="search-title">打印机耗材报价查询</h1>
+            <p class="search-subtitle">输入型号，快速检索所有报价文件中的原始报价信息</p>
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="输入型号关键词，如：388、278A、CRG..." autocomplete="off">
+                <button id="searchBtn" onclick="doSearch()">🔍 搜索</button>
+            </div>
+
+            <!-- 搜索结果统计 -->
+            <div id="resultSummary" class="result-summary hidden"></div>
+        </section>
+
+        <!-- 文件筛选（勾选框） -->
+        <div id="fileFilter" class="file-check-filter hidden">
+            <div class="filter-header">
+                <span class="filter-title">📁 筛选文件</span>
+                <button class="btn btn-sm btn-outline" onclick="toggleAllFiles(true)">全选</button>
+                <button class="btn btn-sm btn-outline" onclick="toggleAllFiles(false)">取消全选</button>
+            </div>
+            <div id="fileCheckList" class="file-check-list"></div>
+        </div>
+
+        <!-- 结果 -->
+        <section id="resultsSection" class="hidden">
+            <div id="resultsContainer"></div>
+        </section>
+
+        <!-- Loading -->
+        <div id="loadingIndicator" class="loading hidden"></div>
+
+        <!-- 空状态 -->
+        <div id="emptyState" class="empty-state">
+            <div class="empty-icon">📋</div>
+            <div class="empty-text">请输入型号关键词进行搜索</div>
+            <div class="empty-hint">支持完整型号匹配和模糊搜索，如输入"388"可匹配"388A""CF388A"等</div>
+        </div>
+
+    </main>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="js/api.js"></script>
+    <script src="js/search.js"></script>
+</body>
+</html>

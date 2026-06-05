@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生成测试数据 - 报价系统</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+    <header class="app-header">
+        <div class="logo"><span class="icon">🧪</span><span>生成测试用 Excel 报价文件</span></div>
+    </header>
+
+    <main class="container">
+        <div class="card">
+            <h3 class="card-title">📋 生成测试 Excel 文件</h3>
+            <p class="mb-16 text-secondary">生成符合需求文档格式的示例报价文件，用于测试系统功能。</p>
+
+            <div id="generatedFiles" class="mt-16"></div>
+
+            <button class="btn btn-primary mt-16" onclick="generateAll()">🎲 一键生成全部测试文件</button>
+        </div>
+    </main>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ===== 测试数据 =====
+const TEST_DATA = [
+    {
+        name: '科思特报价.xlsx',
+        categories: [
+            {
+                name: 'HP系列',
+                headers: ['型号', '适用机型', '页产量', '标准版', '商务版', '旗舰版', '至尊版'],
+                rows: [
+                    ['388A', 'M1136', '1500', '35', '42', '48', '55'],
+                    ['278A', 'M1536', '1600', '32', '39', '45', '52'],
+                    ['CF388A', 'M1136/M1216', '1500', '36', '43', '49', '56'],
+                    ['CRG388', 'LBP-6000', '1500', '34', '41', '47', '54'],
+                    ['388X', 'M1138', '3000', '52', '60', '68', '78'],
+                    ['12A', 'HP1020', '2000', '28', '35', '40', '46'],
+                    ['49A', 'M1132', '2500', '38', '45', '52', '60'],
+                    ['80A', 'M401', '2700', '42', '50', '57', '65'],
+                ]
+            },
+            {
+                name: 'Canon系列',
+                headers: ['型号', '适用机型', '页产量', '标准版', '商务版', '旗舰版', '至尊版'],
+                rows: [
+                    ['CRG-328', 'LBP-6000', '2100', '38', '45', '52', '60'],
+                    ['CRG-326', 'LBP-6200', '2100', '36', '42', '48', '56'],
+                    ['CRG-725', 'LBP-6300', '3500', '55', '62', '70', '80'],
+                    ['NPG-51', 'iR2420', '15000', '185', '210', '240', '275'],
+                    ['NPG-28', 'iR2016', '12000', '165', '188', '215', '245'],
+                    ['CRG-319', 'LBP-6300dn', '3500', '58', '65', '73', '83'],
+                ]
+            },
+            {
+                name: 'Brother系列',
+                headers: ['型号', '适用机型', '页产量', '标准版', '商务版', '旗舰版'],
+                rows: [
+                    ['TN-2225', 'HL-2240D', '2600', '42', '48', '55'],
+                    ['TN-2325', 'HL-2260D', '2600', '45', '52', '60'],
+                    ['DR-2355', 'HL-2260D', '12000', '88', '98', '112'],
+                    ['TN-3335', 'HL-5440D', '4500', '62', '70', '80'],
+                    ['DR-3355', 'HL-5440D', '30000', '145', '165', '188'],
+                ]
+            }
+        ]
+    },
+    {
+        name: '格之格报价.xlsx',
+        categories: [
+            {
+                name: 'HP系列',
+                headers: ['型号', '适用机型', '页产量', '标准版', '商务版', '旗舰版', '至尊版'],
+                rows: [
+                    ['388A', 'M1136', '1500', '32', '38', '44', '50'],
+                    ['278A', 'M1536', '1600', '30', '36', '42', '48'],
+                    ['CF388A', 'M1136/M1216', '1500', '33', '39', '45', '51'],
+                    ['12A', 'HP1020', '2000', '25', '32', '36', '42'],
+                    ['49A', 'M1132', '2500', '35', '42', '48', '55'],
+                ]
+            },
+            {
+                name: 'Samsung系列',
+                headers: ['型号', '适用机型', '页产量', '标准版', '商务版', '旗舰版'],
+                rows: [
+                    ['MLT-D111S', 'M2020', '1000', '28', '35', '42'],
+                    ['MLT-D116L', 'M2675F', '3000', '48', '55', '62'],
+                    ['MLT-R116', 'M2675F', '9000', '68', '78', '88'],
+                ]
+            }
+        ]
+    },
+    {
+        name: '天威报价.xlsx',
+        categories: [
+            {
+                name: 'HP系列',
+                headers: ['型号', '适用机型', '页产量', '标准版', '商务版', '旗舰版'],
+                rows: [
+                    ['388A', 'M1136', '1500', '30', '36', '42'],
+                    ['278A', 'M1536', '1600', '28', '34', '40'],
+                    ['CF388A', 'M1136/M1216', '1500', '31', '37', '43'],
+                    ['12A', 'HP1020', '2000', '24', '30', '35'],
+                    ['80A', 'M401', '2700', '38', '45', '52'],
+                ]
+            },
+            {
+                name: 'Lenovo系列',
+                headers: ['型号', '适用机型', '页产量', '标准版', '商务版', '旗舰版'],
+                rows: [
+                    ['LD-2641', 'M7205', '12000', '78', '88', '98'],
+                    ['LT-2641', 'M7205', '2600', '42', '48', '55'],
+                    ['LD-2922', 'M7250', '12000', '82', '92', '102'],
+                    ['LT-2922', 'M7250', '2600', '45', '52', '58'],
+                ]
+            }
+        ]
+    }
+];
+
+function generateExcel(fileData) {
+    const workbook = XLSX.utils.book_new();
+
+    if (fileData.categories.length === 1) {
+        // 单分类：放在同一Sheet，分类名作为标题行
+        const cat = fileData.categories[0];
+        const sheetData = [
+            [cat.name],  // 分类名
+            cat.headers,
+            ...cat.rows
+        ];
+        const ws = XLSX.utils.aoa_to_sheet(sheetData);
+        // 设置列宽
+        ws['!cols'] = cat.headers.map(h => ({ wch: 14 }));
+        XLSX.utils.book_append_sheet(workbook, ws, '报价');
+    } else {
+        // 多分类：每个分类一个Sheet
+        fileData.categories.forEach((cat, idx) => {
+            const sheetData = [
+                [cat.name],
+                cat.headers,
+                ...cat.rows
+            ];
+            const sheetName = cat.name.substring(0, 31);
+            const ws = XLSX.utils.aoa_to_sheet(sheetData);
+            ws['!cols'] = cat.headers.map(h => ({ wch: 14 }));
+            XLSX.utils.book_append_sheet(workbook, ws, sheetName);
+        });
+    }
+
+    return workbook;
+}
+
+function downloadExcel(workbook, fileName) {
+    const buffer = XLSX.write(workbook, { type: 'array', bookType: 'xlsx' });
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function generateAll() {
+    const container = document.getElementById('generatedFiles');
+    container.innerHTML = '<h4>✅ 已生成的文件：</h4>';
+
+    TEST_DATA.forEach(data => {
+        const workbook = generateExcel(data);
+        downloadExcel(workbook, data.name);
+
+        const totalRows = data.categories.reduce((sum, c) => sum + c.rows.length, 0);
+        container.innerHTML += `
+            <div class="file-item" style="margin-bottom:8px">
+                <div class="file-info">
+                    <div class="file-name">📁 ${data.name}</div>
+                    <div class="file-meta">${data.categories.length} 个分类 · ${totalRows} 条记录</div>
+                </div>
+                <button class="btn btn-outline btn-sm" onclick='downloadAgain(${JSON.stringify(data)})'>📥 再次下载</button>
+            </div>
+        `;
+    });
+
+    container.innerHTML += '<p class="mt-16 text-secondary">💡 下载完成后，请前往 <a href="admin.html">管理后台</a> 上传这些文件进行测试。</p>';
+
+    showToast(`已生成 ${TEST_DATA.length} 个测试文件`, 'success');
+}
+
+function downloadAgain(fileData) {
+    const workbook = generateExcel(fileData);
+    downloadExcel(workbook, fileData.name);
+    showToast(`${fileData.name} 已下载`, 'success');
+}
+
+function showToast(message, type) {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+    container.appendChild(toast);
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.3s';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+</script>
+</body>
+</html>
